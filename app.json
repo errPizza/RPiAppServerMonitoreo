@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Pi Command Center",
+    "slug": "pi-command-center",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0d1117"
+    },
+    "android": {
+      "package": "com.rpimonitor.commandcenter"
+    },
+    "ios": {
+      "bundleIdentifier": "com.rpimonitor.commandcenter"
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
