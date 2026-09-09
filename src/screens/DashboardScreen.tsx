@@ -34,6 +34,10 @@ export function DashboardScreen() {
       </Screen>
     );
   const d = dashboard;
+  const diskPercent =
+    d.metrics.diskUsed !== null && d.metrics.diskTotal
+      ? `${Math.round((d.metrics.diskUsed / d.metrics.diskTotal) * 100)}%`
+      : "N/A";
   return (
     <Screen>
       <PageHeader
@@ -56,37 +60,35 @@ export function DashboardScreen() {
           icon="speedometer-outline"
           label="CPU"
           value={`${d.metrics.cpu}%`}
-          detail="4 cores"
+          detail={`${d.metrics.cores.length} cores`}
           color={colors.blue}
         />
         <MetricCard
           icon="hardware-chip-outline"
           label="MEMORY"
           value={`${d.metrics.ramUsed} / ${d.metrics.ramTotal} GB`}
-          detail="54% used"
+          detail={`${Math.round((d.metrics.ramUsed / d.metrics.ramTotal) * 100)}% used`}
           color={colors.purple}
         />
         <MetricCard
           icon="thermometer-outline"
           label="TEMPERATURE"
-          value={`${d.metrics.temperature}°C`}
-          detail="Nominal range"
+          value={d.metrics.temperature === null ? "N/A" : `${d.metrics.temperature}°C`}
+          detail={d.metrics.temperature === null ? "Sensor unavailable" : "Nominal range"}
           color={colors.green}
         />
         <MetricCard
           icon="flash-outline"
           label="POWER"
-          value={`${d.power.watts} W`}
-          detail={
-            d.power.source === "mock" ? "Mock telemetry" : "Live telemetry"
-          }
+          value={d.power.watts === null ? "N/A" : `${d.power.watts} W`}
+          detail={d.power.source === "mock" ? "Mock telemetry" : "Sensor unavailable"}
           color={colors.yellow}
         />
         <MetricCard
           icon="save-outline"
           label="STORAGE"
-          value="62%"
-          detail="24.3 GB free"
+          value={diskPercent}
+          detail={d.metrics.diskUsed === null ? "Collector unavailable" : `${(d.metrics.diskTotal! - d.metrics.diskUsed).toFixed(1)} GB free`}
           color={colors.orange}
         />
         <MetricCard

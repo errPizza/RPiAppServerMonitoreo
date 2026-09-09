@@ -15,7 +15,14 @@
       "bundleIdentifier": "com.rpimonitor.commandcenter"
     },
     "plugins": [
-      "expo-asset"
-    ]
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "79861219-b5ab-41c9-a0d7-87b305a7a752"
+      }
+    },
+    "owner": "errpiczadev"
   }
 }

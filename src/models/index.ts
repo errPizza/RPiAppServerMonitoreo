@@ -2,8 +2,8 @@ export type Health = 'online' | 'warning' | 'critical' | 'offline';
 export type AlertLevel = 'info' | 'warning' | 'error' | 'critical';
 export type LogLevel = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
 
-export interface ServerStatus { name: string; host: string; health: Health; uptime: string; lastUpdated: Date; }
-export interface SystemMetrics { cpu: number; cores: number[]; ramUsed: number; ramTotal: number; temperature: number; frequency: string; diskUsed: number; diskTotal: number; download: string; upload: string; }
+export interface ServerStatus { name: string; host: string; health: Health; uptime: string; lastUpdated: Date | string; }
+export interface SystemMetrics { cpu: number; cores: number[]; ramUsed: number; ramTotal: number; temperature: number | null; frequency: string; diskUsed: number | null; diskTotal: number | null; download: string; upload: string; }
 export interface PowerMetrics { watts: number | null; averageWatts: number | null; peakWatts: number | null; minimumWatts: number | null; voltage?: number | null; current?: number | null; energyKwh?: number | null; history: number[]; source: 'mock' | 'api' | 'unavailable'; }
 export interface RequestStatistics { perSecond: number; perMinute: number; perHour: number; total: string; methods: Record<string, number>; statuses: Record<string, number>; averageResponse: string; maxResponse: string; inbound: string; outbound: string; endpoints: { path: string; requests: string; response: string }[]; history: number[]; }
 export interface ErrorStatistics { total: number; statuses: Record<string, number>; history: number[]; }
