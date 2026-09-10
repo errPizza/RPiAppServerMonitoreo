@@ -34,14 +34,18 @@ export function HardwareScreen() {
         <MetricCard
           icon="speedometer-outline"
           label="CPU USAGE"
-          value={`${m.cpu}%`}
+          value={m.cpu === null ? "N/A" : `${m.cpu}%`}
           detail={`${m.frequency} · ${m.cores.length} cores`}
         />
         <MetricCard
           icon="thermometer-outline"
           label="TEMPERATURE"
           value={m.temperature === null ? "N/A" : `${m.temperature}°C`}
-          detail={m.temperature === null ? "Sensor unavailable" : "Within normal range"}
+          detail={
+            m.temperature === null
+              ? "Sensor unavailable"
+              : "Within normal range"
+          }
           color={colors.green}
         />
         <MetricCard
@@ -55,7 +59,11 @@ export function HardwareScreen() {
           icon="save-outline"
           label="DISK"
           value={m.diskUsed === null ? "N/A" : `${m.diskUsed} GB`}
-          detail={m.diskUsed === null || m.diskTotal === null ? "Collector unavailable" : `${(m.diskTotal - m.diskUsed).toFixed(1)} GB available`}
+          detail={
+            m.diskUsed === null || m.diskTotal === null
+              ? "Collector unavailable"
+              : `${(m.diskTotal - m.diskUsed).toFixed(1)} GB available`
+          }
           color={colors.orange}
         />
       </View>

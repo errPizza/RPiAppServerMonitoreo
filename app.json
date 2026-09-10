@@ -1,12 +1,14 @@
 {
   "expo": {
-    "name": "Pi Command Center",
+    "name": "AGM Server Monitoring",
     "slug": "pi-command-center",
     "version": "1.0.0",
+    "icon": "./assets/agm-server-monitoring-icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "splash": {
-      "backgroundColor": "#0d1117"
+      "backgroundColor": "#050806",
+      "resizeMode": "contain"
     },
     "android": {
       "package": "com.rpimonitor.commandcenter"
@@ -16,7 +18,8 @@
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

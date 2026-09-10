@@ -59,7 +59,7 @@ export function DashboardScreen() {
         <MetricCard
           icon="speedometer-outline"
           label="CPU"
-          value={`${d.metrics.cpu}%`}
+          value={d.metrics.cpu === null ? "N/A" : `${d.metrics.cpu}%`}
           detail={`${d.metrics.cores.length} cores`}
           color={colors.blue}
         />
@@ -73,22 +73,36 @@ export function DashboardScreen() {
         <MetricCard
           icon="thermometer-outline"
           label="TEMPERATURE"
-          value={d.metrics.temperature === null ? "N/A" : `${d.metrics.temperature}°C`}
-          detail={d.metrics.temperature === null ? "Sensor unavailable" : "Nominal range"}
+          value={
+            d.metrics.temperature === null
+              ? "N/A"
+              : `${d.metrics.temperature}°C`
+          }
+          detail={
+            d.metrics.temperature === null
+              ? "Sensor unavailable"
+              : "Nominal range"
+          }
           color={colors.green}
         />
         <MetricCard
           icon="flash-outline"
           label="POWER"
           value={d.power.watts === null ? "N/A" : `${d.power.watts} W`}
-          detail={d.power.source === "mock" ? "Mock telemetry" : "Sensor unavailable"}
+          detail={
+            d.power.source === "mock" ? "Mock telemetry" : "Sensor unavailable"
+          }
           color={colors.yellow}
         />
         <MetricCard
           icon="save-outline"
           label="STORAGE"
           value={diskPercent}
-          detail={d.metrics.diskUsed === null ? "Collector unavailable" : `${(d.metrics.diskTotal! - d.metrics.diskUsed).toFixed(1)} GB free`}
+          detail={
+            d.metrics.diskUsed === null
+              ? "Collector unavailable"
+              : `${(d.metrics.diskTotal! - d.metrics.diskUsed).toFixed(1)} GB free`
+          }
           color={colors.orange}
         />
         <MetricCard
