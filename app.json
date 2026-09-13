@@ -11,7 +11,8 @@
       "resizeMode": "contain"
     },
     "android": {
-      "package": "com.rpimonitor.commandcenter"
+      "package": "com.rpimonitor.commandcenter",
+      "versionCode": 2
     },
     "ios": {
       "bundleIdentifier": "com.rpimonitor.commandcenter"
@@ -19,13 +20,28 @@
     "plugins": [
       "expo-asset",
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-navigation-bar",
+        {
+          "visibility": "hidden",
+          "position": "absolute",
+          "behavior": "overlay-swipe",
+          "backgroundColor": "#101010",
+          "barStyle": "light"
+        }
+      ]
     ],
     "extra": {
       "eas": {
         "projectId": "79861219-b5ab-41c9-a0d7-87b305a7a752"
       }
     },
-    "owner": "errpiczadev"
+    "owner": "errpiczadev",
+    "androidStatusBar": {
+      "hidden": true,
+      "backgroundColor": "#101010",
+      "barStyle": "light-content"
+    }
   }
 }

@@ -1,6 +1,6 @@
 # AGM Server Monitoring
 
-Aplicación móvil Expo/React Native para monitorear y administrar una Raspberry Pi mediante una API de monitoreo. Este repositorio contiene **solo el cliente móvil**: no configura Raspberry Pi, Docker, Nginx, Cloudflare ni ningún backend.
+Aplicación móvil Expo/React Native para monitorear y administrar una Raspberry Pi mediante una API de monitoreo. Este repositorio contiene el cliente móvil y un servidor de desarrollo para comprobar el contrato. La API de producción se mantiene en `errPizza/Discord-RobloxPurchsAlerts`.
 
 ## Ejecutar la app móvil
 
@@ -20,7 +20,7 @@ npm run build:apk
 
 Al finalizar, EAS mostrará una URL de descarga. Ábrela desde el teléfono Android, descarga el APK y permite la instalación desde esa fuente cuando Android lo solicite.
 
-El perfil `preview` se conecta al API móvil de Another Game More. No incorpora credenciales: cada teléfono inicia sesión y necesita aprobación administrativa la primera vez.
+El perfil `preview` tiene activado temporalmente el bypass: entra sin login y usa datos y archivos simulados. Para conectar con la RPi, desactiva `EXPO_PUBLIC_BYPASS_AUTH` en el perfil de compilación. En producción, cada teléfono inicia sesión y necesita aprobación administrativa la primera vez.
 
 Copia `.env.example` a `.env` para configurar la URL. El modo `mock` sigue disponible para desarrollo visual, pero no usa datos del servidor.
 
@@ -43,3 +43,9 @@ Las pantallas hablan con `MonitoringRepository`, por lo que no necesitan cambios
 - `src/services`: adaptadores HTTP del API móvil, mock, autenticación segura y notificaciones.
 - `src/config`: configuración por entorno.
 - `src/state/AuthContext.tsx`: sesión por dispositivo y flujo de aprobación.
+
+## Menú, pantalla completa y Storage
+
+La navegación está en el menú superior, con secciones y subsecciones desplegables. El diseño usa fondos negros y gris carbón, sin la barra inferior ni su espacio reservado. Android se configura en pantalla completa. Storage muestra discos y volúmenes independientes, capacidad, uso y exploración de archivos de solo lectura.
+
+Consulta [STORAGE.md](STORAGE.md) para aplicar el cambio del backend real, habilitar sus volúmenes y conocer los formatos de vista previa admitidos. Los cambios del servidor están preparados como parche; no se han desplegado.

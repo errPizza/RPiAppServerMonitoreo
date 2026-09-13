@@ -1,37 +1,86 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/state/AuthContext';
-import { MonitoringProvider } from './src/state/MonitoringContext';
+import { MonitoringProvider, useMonitoring } from './src/state/MonitoringContext';
+import { environment } from './src/config/environment';
 import { colors } from './src/theme';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { HardwareScreen } from './src/screens/HardwareScreen';
 import { TrafficScreen } from './src/screens/TrafficScreen';
 import { LogsScreen } from './src/screens/LogsScreen';
 import { AlertsScreen, DockerScreen, ErrorsScreen, NginxScreen, RemoteControlScreen, StatisticsScreen } from './src/screens/SecondaryScreens';
-import { MoreScreen, SettingsScreen } from './src/screens/MoreScreen';
+import { SettingsScreen } from './src/screens/MoreScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { IntroScreen } from './src/screens/IntroScreen';
 
-const Tabs = createBottomTabNavigator();
+import { AppMenuHeader } from './src/navigation/AppMenuHeader';
+import { Fullscreen } from './src/components/Fullscreen';
+import { StorageScreen } from './src/screens/StorageScreen';
 const Stack = createNativeStackNavigator();
-const tabIcons: Record<string, keyof typeof Ionicons.glyphMap> = { Dashboard: 'grid-outline', 'Raspberry Pi': 'hardware-chip-outline', Requests: 'pulse-outline', Logs: 'document-text-outline', More: 'ellipsis-horizontal-outline' };
-const navigationTheme = { ...DarkTheme, colors: { ...DarkTheme.colors, primary: colors.blue, background: colors.bg, card: colors.surface, text: colors.text, border: colors.border, notification: colors.red } };
-
-function TabsNavigator() {
-  return <Tabs.Navigator screenOptions={({ route }) => ({ headerShown: false, tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border }, tabBarActiveTintColor: colors.blue, tabBarInactiveTintColor: colors.muted, tabBarLabelStyle: { fontSize: 10, fontWeight: '700' }, tabBarIcon: ({ color, size }) => <Ionicons name={tabIcons[route.name]} size={size} color={color} /> })}>
-    <Tabs.Screen name="Dashboard" component={DashboardScreen} /><Tabs.Screen name="Raspberry Pi" component={HardwareScreen} /><Tabs.Screen name="Requests" component={TrafficScreen} /><Tabs.Screen name="Logs" component={LogsScreen} /><Tabs.Screen name="More" component={MoreScreen} />
-  </Tabs.Navigator>;
-}
+const navigationTheme = { ...DarkTheme, colors: { ...DarkTheme.colors, primary: colors.text, background: colors.bg, card: colors.surface, text: colors.text, border: colors.border, notification: colors.red } };
 
 function RootNavigator() {
   const { state } = useAuth();
   if (state !== 'authenticated') return <LoginScreen />;
-  return <MonitoringProvider><NavigationContainer theme={navigationTheme}><StatusBar style="light" /><Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.bg }, headerTintColor: colors.text, headerShadowVisible: false, headerTitleStyle: { fontWeight: '700' } }}>
-    <Stack.Screen name="Command Center" component={TabsNavigator} options={{ headerShown: false }} /><Stack.Screen name="Errors" component={ErrorsScreen} /><Stack.Screen name="Docker" component={DockerScreen} /><Stack.Screen name="Nginx" component={NginxScreen} /><Stack.Screen name="Statistics" component={StatisticsScreen} /><Stack.Screen name="Alerts" component={AlertsScreen} /><Stack.Screen name="Remote Control" component={RemoteControlScreen} /><Stack.Screen name="Settings" component={SettingsScreen} />
-  </Stack.Navigator></NavigationContainer></MonitoringProvider>;
+  return <NavigationContainer theme={navigationTheme}><Stack.Navigator screenOptions={{ header: props => <AppMenuHeader {...props} />, contentStyle: { backgroundColor: colors.bg }, statusBarHidden: true, navigationBarHidden: true, autoHideHomeIndicator: true }}>
+    <Stack.Screen name="Dashboard" component={DashboardScreen} />
+    <Stack.Screen name="Raspberry Pi" component={HardwareScreen} />
+    <Stack.Screen name="Storage" component={StorageScreen} />
+    <Stack.Screen name="Requests" component={TrafficScreen} />
+    <Stack.Screen name="Logs" component={LogsScreen} />
+    <Stack.Screen name="Errors" component={ErrorsScreen} />
+    <Stack.Screen name="Docker" component={DockerScreen} />
+    <Stack.Screen name="Nginx" component={NginxScreen} />
+    <Stack.Screen name="Statistics" component={StatisticsScreen} />
+    <Stack.Screen name="Alerts" component={AlertsScreen} />
+    <Stack.Screen name="Remote Control" component={RemoteControlScreen} />
+    <Stack.Screen name="Settings" component={SettingsScreen} />
+  </Stack.Navigator></NavigationContainer>;
 }
 
-export default function App() { return <AuthProvider><RootNavigator /></AuthProvider>; }
+function AppContent() {
+  const [introComplete, setIntroComplete] = useState(false);
+  const { state, retrySession } = useAuth();
+  const monitoring = useMonitoring();
+  const [appMounted, setAppMounted] = useState(false);
+  const canMount = state !== 'checking' && (state !== 'authenticated' || monitoring.state !== 'loading');
+  const startupReady = canMount && appMounted;
+  const local = environment.bypassAuth || environment.mode === 'mock';
+  const startupLines = [
+    state === 'checking' ? 'Cargando sesión…' : environment.bypassAuth ? 'Sesión local lista · bypass activo' : state === 'authenticated' ? 'Sesión cargada' : 'Inicio de sesión necesario',
+    ...(state === 'authenticated' ? [monitoring.state === 'loading'
+      ? local ? 'Cargando datos locales…' : 'Conectando a RPi Server · cargando datos…'
+      : monitoring.state === 'loaded' ? local ? 'Datos locales cargados · sin conexión a RPi' : 'Datos de RPi Server cargados'
+      : 'RPi no disponible · abriendo estado de error'] : []),
+    ...(canMount ? [appMounted ? 'APP lista' : 'Cargando APP…'] : []),
+  ];
+  const opacity = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!introComplete) return;
+    let active = true;
+    let animation: Animated.CompositeAnimation | undefined;
+    void AccessibilityInfo.isReduceMotionEnabled().catch(() => false).then(reduced => {
+      if (!active) return;
+      animation = Animated.timing(opacity, { toValue: 1, duration: reduced ? 120 : 420, useNativeDriver: true });
+      animation.start();
+    });
+    return () => { active = false; animation?.stop(); };
+  }, [introComplete, opacity]);
+  return <View style={{ flex: 1, backgroundColor: '#000' }}>
+    {canMount && <Animated.View
+      onLayout={() => setAppMounted(true)}
+      pointerEvents={introComplete ? 'auto' : 'none'}
+      accessibilityElementsHidden={!introComplete}
+      importantForAccessibility={introComplete ? 'auto' : 'no-hide-descendants'}
+      style={{ flex: 1, opacity }}><RootNavigator /></Animated.View>}
+    {!introComplete && <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
+      <IntroScreen ready={startupReady} startupLines={startupLines} onInitialize={retrySession} onFinish={() => setIntroComplete(true)} />
+    </View>}
+  </View>;
+}
+
+export default function App() { return <SafeAreaProvider><StatusBar hidden style="light" /><Fullscreen /><AuthProvider><MonitoringProvider><AppContent /></MonitoringProvider></AuthProvider></SafeAreaProvider>; }

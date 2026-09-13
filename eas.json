@@ -10,12 +10,17 @@
       },
       "env": {
         "EXPO_PUBLIC_APP_ENV": "production",
-        "EXPO_PUBLIC_API_BASE_URL": "https://www.anothergamemore.online/api"
+        "EXPO_PUBLIC_API_BASE_URL": "https://www.anothergamemore.online/api",
+        "EXPO_PUBLIC_BYPASS_AUTH": "true"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "EXPO_PUBLIC_BYPASS_AUTH": "false"
       }
     }
   }

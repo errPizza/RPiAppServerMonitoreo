@@ -10,6 +10,8 @@
 const http = require("node:http");
 const os = require("node:os");
 const crypto = require("node:crypto");
+const { createStorageService, storageError } = require("./storage");
+const storage = createStorageService({ roots: JSON.parse(process.env.MONITOR_STORAGE_ROOTS || "[]") });
 
 const PORT = Number(process.env.MONITOR_API_PORT || 8787);
 const API_KEY = process.env.MONITOR_API_KEY || "";
@@ -60,6 +62,20 @@ const server = http.createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
   const path = url.pathname.replace(/^\/api/, "") || "/";
   if (path === "/health" && request.method === "GET") return json(response, 200, { status: "ok", uptime: formatDuration(Date.now() - startedAt), commandExecution: "disabled" });
+  // File browsing is never exposed by the unauthenticated development API.
+  if (path.startsWith('/mobile/storage/')) {
+    if (!API_KEY) return json(response, 503, { error: 'Configura autenticación antes de habilitar Storage.' });
+    if (!requireAuth(request, response)) return;
+    if (request.method !== 'GET') return json(response, 405, { error: 'Storage es de solo lectura.' });
+    try {
+      const volume = url.searchParams.get('volume');
+      const relative = url.searchParams.get('path') || '';
+      if (path === '/mobile/storage/disks') return json(response, 200, await storage.disks());
+      if (path === '/mobile/storage/directory') return json(response, 200, await storage.directory(volume, relative, Number(url.searchParams.get('offset') || 0)));
+      if (path === '/mobile/storage/file') return json(response, 200, await storage.file(volume, relative));
+      return json(response, 404, { error: 'Endpoint not found' });
+    } catch (error) { const result = storageError(error); return json(response, result.status, { error: result.error }); }
+  }
   if (!requireAuth(request, response)) return;
   if (path === "/dashboard" && request.method === "GET") return json(response, 200, dashboard());
   if (path === "/logs" && request.method === "GET") return json(response, 200, logs);

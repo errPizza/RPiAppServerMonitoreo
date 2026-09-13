@@ -12,6 +12,7 @@ import {
 } from "../components/Primitives";
 import { MiniChart } from "../components/Chart";
 import { useMonitoring } from "../state/MonitoringContext";
+import { environment } from "../config/environment";
 import { colors, spacing } from "../theme";
 
 export function DashboardScreen() {
@@ -43,7 +44,7 @@ export function DashboardScreen() {
       <PageHeader
         eyebrow="COMMAND CENTER"
         title="Dashboard"
-        right={<StatusBadge status={d.server.health} label="SERVER ONLINE" />}
+        right={<StatusBadge status={environment.bypassAuth || environment.mode === "mock" ? "warning" : d.server.health} label={environment.bypassAuth || environment.mode === "mock" ? "DATOS SIMULADOS" : "SERVER ONLINE"} />}
       />
       <Card style={styles.serverCard}>
         <View>

@@ -6,82 +6,11 @@ import {
   Card,
   PageHeader,
   SectionTitle,
-  StatusBadge,
 } from "../components/Primitives";
-import { useMonitoring } from "../state/MonitoringContext";
 import { colors, radius } from "../theme";
 import { environment } from "../config/environment";
 import { useAuth } from "../state/AuthContext";
 
-const menu = [
-  ["Errors", "warning-outline", "Inspect HTTP failures"],
-  ["Docker", "logo-docker", "Containers and actions"],
-  ["Nginx", "server-outline", "Web-server performance"],
-  ["Statistics", "bar-chart-outline", "Historical telemetry"],
-  ["Alerts", "notifications-outline", "Notification history"],
-  ["Remote Control", "terminal-outline", "Authorized API commands"],
-  ["Settings", "settings-outline", "Connection and preferences"],
-] as const;
-export function MoreScreen({ navigation }: { navigation: any }) {
-  const { alerts } = useMonitoring();
-  return (
-    <Screen>
-      <PageHeader eyebrow="COMMAND CENTER" title="More" />
-      <Card style={styles.mode}>
-        <View>
-          <Text style={styles.modeTitle}>
-            {environment.mode === "mock"
-              ? "Mock API mode"
-              : "Production API mode"}
-          </Text>
-          <Text style={styles.muted}>
-            {environment.mode === "mock"
-              ? "Simulated, clearly labeled telemetry"
-              : "Live monitoring API connection"}
-          </Text>
-        </View>
-        <StatusBadge
-          status={environment.mode === "mock" ? "warning" : "online"}
-          label={environment.mode.toUpperCase()}
-        />
-      </Card>
-      <SectionTitle title="Monitoring" />
-      <Card style={styles.menu}>
-        {menu.map(([name, icon, caption], index) => (
-          <Pressable
-            key={name}
-            onPress={() => navigation.navigate(name)}
-            style={[styles.item, index > 0 && styles.border]}
-          >
-            <View style={styles.itemIcon}>
-              <Ionicons
-                name={icon}
-                size={18}
-                color={
-                  name === "Alerts" && alerts.some((a) => !a.read)
-                    ? colors.red
-                    : colors.blue
-                }
-              />
-            </View>
-            <View style={styles.itemBody}>
-              <Text style={styles.itemTitle}>{name}</Text>
-              <Text style={styles.muted}>{caption}</Text>
-            </View>
-            {name === "Alerts" && alerts.some((a) => !a.read) ? (
-              <View style={styles.count}>
-                <Text style={styles.countText}>
-                  {alerts.filter((a) => !a.read).length}
-                </Text>
-              </View>
-            ) : null}
-            <Ionicons name="chevron-forward" size={17} color={colors.subtle} />
-          </Pressable>
-        ))}
-      </Card>
-    </Screen>
-  );
-}
 export function SettingsScreen() {
   const { logout } = useAuth();
   const [critical, setCritical] = useState(true);
@@ -96,8 +25,8 @@ export function SettingsScreen() {
         <Setting
           label="Connection"
           value={
-            environment.mode === "mock"
-              ? "Mock API · connected"
+            environment.bypassAuth || environment.mode === "mock"
+              ? "Datos simulados · sin conexión a RPi"
               : environment.apiBaseUrl
           }
         />
@@ -109,8 +38,8 @@ export function SettingsScreen() {
               : environment.apiBaseUrl
           }
         />
-        <Setting label="Authentication" value="Secure session storage ready" />
-        <Setting label="Session" value={environment.mode === "mock" ? "Mock session" : "Authenticated device session"} />
+        <Setting label="Authentication" value={environment.bypassAuth ? "Temporarily bypassed for development" : "Secure session storage ready"} />
+        <Setting label="Session" value={environment.bypassAuth || environment.mode === "mock" ? "Development session" : "Authenticated device session"} />
       </Card>
       <SectionTitle title="Notifications" />
       <Card style={styles.settings}>
@@ -140,11 +69,11 @@ export function SettingsScreen() {
       </Card>
       <SectionTitle title="About" />
       <Card style={styles.settings}>
-        <Setting label="Theme" value="Dark (system ready)" />
+        <Setting label="Theme" value="Negro / gris carbón" />
         <Setting label="Version" value="1.0.0" />
         <Setting label="Build" value="Mobile monitoring client" />
       </Card>
-      {environment.mode === "production" ? <Pressable onPress={() => void logout()} style={styles.signOut}><Ionicons name="log-out-outline" size={18} color={colors.red} /><Text style={styles.signOutText}>Sign out and revoke this device session</Text></Pressable> : null}
+      {environment.mode === "production" && !environment.bypassAuth ? <Pressable onPress={() => void logout()} style={styles.signOut}><Ionicons name="log-out-outline" size={18} color={colors.red} /><Text style={styles.signOutText}>Sign out and revoke this device session</Text></Pressable> : null}
     </Screen>
   );
 }
@@ -180,41 +109,6 @@ function Toggle({
   );
 }
 const styles = StyleSheet.create({
-  mode: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  modeTitle: { color: colors.text, fontSize: 14, fontWeight: "800" },
-  muted: { color: colors.muted, fontSize: 11, marginTop: 3 },
-  menu: { paddingVertical: 0 },
-  item: {
-    minHeight: 62,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 10,
-  },
-  border: { borderTopWidth: 1, borderTopColor: colors.border },
-  itemIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.sm,
-    backgroundColor: "#58a6ff12",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  itemBody: { flex: 1 },
-  itemTitle: { color: colors.text, fontWeight: "700", fontSize: 14 },
-  count: {
-    backgroundColor: colors.red,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  countText: { color: colors.text, fontSize: 10, fontWeight: "800" },
   settings: { paddingVertical: 0 },
   setting: {
     minHeight: 54,

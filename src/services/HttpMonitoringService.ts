@@ -1,3 +1,4 @@
+import { StorageDisk, StorageDirectory, StorageFile } from '../models/storage';
 import { environment } from "../config/environment";
 import {
   Alert,
@@ -64,12 +65,22 @@ export class HttpMonitoringService implements MonitoringService {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok)
         throw new Error(
-          payload.error ?? `Monitoring API returned ${response.status}`,
+          response.status === 404 && path === '/storage/disks' ? 'La API del servidor todavía no tiene Storage habilitado.' : payload.error ?? `Monitoring API returned ${response.status}`,
         );
       return payload as T;
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  async getStorageDisks(): Promise<StorageDisk[]> {
+    return this.request('/storage/disks');
+  }
+  async getStorageDirectory(volume: string, path: string, offset = 0): Promise<StorageDirectory> {
+    return this.request(`/storage/directory?volume=${encodeURIComponent(volume)}&path=${encodeURIComponent(path)}&offset=${offset}`);
+  }
+  async getStorageFile(volume: string, path: string): Promise<StorageFile> {
+    return this.request(`/storage/file?volume=${encodeURIComponent(volume)}&path=${encodeURIComponent(path)}`);
   }
 
   async getDashboard(): Promise<DashboardData> {

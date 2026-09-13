@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { restoreStartupSession } from "../services/StartupSession";
 import { environment } from "../config/environment";
 import { authService, MobileLoginResult, tokenStore } from "../services/AuthService";
 
@@ -22,22 +23,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string>();
   const [pendingDevice, setPendingDevice] = useState<string>();
   const retrySession = useCallback(async () => {
-    if (environment.mode === "mock") {
-      setState("authenticated");
-      return;
-    }
-    const token = await tokenStore.load();
-    if (!token) {
+    setState("checking");
+    try {
+      const authenticated = await restoreStartupSession({
+        bypass: environment.bypassAuth,
+        mock: environment.mode === "mock",
+        loadToken: () => tokenStore.load(),
+        refresh: () => authService.refresh(),
+      });
+      setState(authenticated ? "authenticated" : "unauthenticated");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to restore session.");
       setState("unauthenticated");
-      return;
     }
-    setState(
-      (await authService.refresh()) ? "authenticated" : "unauthenticated",
-    );
   }, []);
-  useEffect(() => {
-    void retrySession();
-  }, [retrySession]);
+  // Startup is triggered by the final intro scene, while its real status is visible.
   const login = useCallback(async (email: string, password: string) => {
     setError(undefined);
     try {
@@ -56,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
   const logout = useCallback(async () => {
+    // DEVELOPMENT ONLY: keep the temporary offline session independent of the RPi.
+    if (environment.bypassAuth) { setState("authenticated"); return; }
     await authService.logout();
     setPendingDevice(undefined);
     setState("unauthenticated");

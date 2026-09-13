@@ -57,10 +57,15 @@ class TokenStore {
 export const tokenStore = new TokenStore();
 
 async function authRequest<T>(path: string, body: object): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), environment.requestTimeoutMs);
+  try {
   const response = await fetch(`${environment.apiBaseUrl}/mobile/auth${path}`, {
+    signal: controller.signal,
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: body }),
+    // The server parser wraps the JSON once as request.body.data.
+    body: JSON.stringify(body),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok)
@@ -68,6 +73,7 @@ async function authRequest<T>(path: string, body: object): Promise<T> {
       payload.error ?? "Unable to authenticate with monitoring API.",
     );
   return payload as T;
+  } finally { clearTimeout(timer); }
 }
 
 export const authService = {

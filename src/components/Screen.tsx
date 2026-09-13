@@ -1,12 +1,15 @@
 import React from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing } from '../theme';
 import { useMonitoring } from '../state/MonitoringContext';
 
-export function Screen({ children, scroll = true }: { children: React.ReactNode; scroll?: boolean }) {
+export function Screen({ children, scroll = true, onRefresh, refreshing }: {
+  children: React.ReactNode; scroll?: boolean; onRefresh?: () => void; refreshing?: boolean;
+}) {
   const { refresh, state } = useMonitoring();
-  const content = <View style={styles.content}>{children}</View>;
-  return <SafeAreaView edges={['top']} style={styles.safe}>{scroll ? <ScrollView contentContainerStyle={styles.scroll} refreshControl={<RefreshControl refreshing={state === 'loading'} onRefresh={() => void refresh()} tintColor={colors.blue} />}>{content}</ScrollView> : content}</SafeAreaView>;
+  const insets = useSafeAreaInsets();
+  const content = <View style={[styles.content, { paddingLeft: Math.max(spacing.lg, insets.left), paddingRight: Math.max(spacing.lg, insets.right) }]}>{children}</View>;
+  return <View style={styles.screen}>{scroll ? <ScrollView contentContainerStyle={{ paddingBottom: Math.max(spacing.lg, insets.bottom) }} refreshControl={<RefreshControl refreshing={refreshing ?? state === 'loading'} onRefresh={onRefresh ?? (() => void refresh())} tintColor={colors.muted} />}>{content}</ScrollView> : content}</View>;
 }
-const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.bg }, scroll: { paddingBottom: 112 }, content: { padding: spacing.lg, gap: spacing.lg } });
+const styles = StyleSheet.create({ screen: { flex: 1, backgroundColor: colors.bg }, content: { padding: spacing.lg, gap: spacing.lg } });
