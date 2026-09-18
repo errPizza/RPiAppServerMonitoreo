@@ -6,6 +6,5 @@ dist/
 .env.*
 !.env.example
 
-# Local motion reference; not part of the app or EAS source upload.
 /assets/videoplayback*.mp4
 /artifacts/

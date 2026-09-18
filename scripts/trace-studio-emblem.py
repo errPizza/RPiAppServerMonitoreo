@@ -1,6 +1,3 @@
-"""Build animation geometry from the actual PNG (development-time tool only).
-Run with opencv-contrib-python-headless installed. The PNG is never modified.
-"""
 from pathlib import Path
 import json
 import cv2
@@ -40,9 +37,6 @@ for a in sorted(pixels):
 for a in sorted(pixels):
     for b in neighbors[a]:
         if edge(a,b) not in visited: paths.append(walk(a,b))
-# Merge nearby branches into 56 fixed trajectories, preserving every skeleton edge.
-# Short connections traverse black space and are clipped to the original image
-# while consuming it, so they cannot create extra marks on the emblem.
 paths.sort(key=lambda p: -len(p))
 while len(paths)>56:
     small=paths.pop()

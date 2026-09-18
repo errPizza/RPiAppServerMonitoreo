@@ -2,13 +2,11 @@ diff --git a/.env.example b/.env.example
 index 6eb1851..c16f403 100644
 --- a/.env.example
 +++ b/.env.example
-@@ -46,3 +46,7 @@ ALERT_CPU_PERCENT=0
+@@ -46,3 +46,5 @@ ALERT_CPU_PERCENT=0
  ALERT_RAM_PERCENT=0
  ALERT_TEMPERATURE_C=0
  ALERT_DISK_PERCENT=0
 +
-+# Storage: mounted paths visible to the API; [] disables file browsing.
-+# For existing Docker mappings: STORAGE_ROOTS=["/app/data","/app/backups"]
 +STORAGE_ROOTS=[]
 diff --git a/Dockerfile b/Dockerfile
 index b676b6b..2e6f6a6 100644
@@ -130,7 +128,7 @@ new file mode 100644
 index 0000000..4158e84
 --- /dev/null
 +++ b/server/services/storage.cjs
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,137 @@
 +'use strict';
 +const fs = require('node:fs/promises');
 +const { constants } = require('node:fs');
@@ -157,8 +155,6 @@ index 0000000..4158e84
 +  return parts;
 +}
 +
-+// Open each component relative to an anchored directory descriptor. No symlink
-+// traversal, shell interpolation, or escapes into a different mounted device.
 +async function withEntry(root, relative, directory, operation) {
 +  const parts = relativeParts(relative);
 +  let handle;
@@ -203,7 +199,6 @@ index 0000000..4158e84
 +                totalBytes = stats.blocks * stats.bsize;
 +                usedBytes = (stats.blocks - stats.bfree) * stats.bsize;
 +                freeBytes = stats.bavail * stats.bsize;
-+                // Do not allow a configured symlink to change the browsing root.
 +                browsable = allowed.has(path.resolve(mount)) && await fs.realpath(mount) === path.resolve(mount);
 +                if (browsable) locations.set(volumeId, mount);
 +              } catch { reason = 'No se pudo consultar el volumen; comprueba que siga montado y sus permisos.'; }

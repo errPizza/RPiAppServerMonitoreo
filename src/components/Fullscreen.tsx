@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
 
-// Keep system controls available with an edge swipe, then let them hide again.
 export function Fullscreen() {
   useEffect(() => {
     if (Platform.OS !== 'android') return;
